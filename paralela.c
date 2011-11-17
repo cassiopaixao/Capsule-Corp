@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 	capsule_init(&capsule);
 
 	//executa as iterações
-	capsule_iterate(&capsule)
+	capsule_iterate(&capsule);
 
 	// imprime saida
 	capsule_output(&capsule);

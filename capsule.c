@@ -111,8 +111,13 @@ void tile_update_temp(Tile *t) {
 
 // BEGIN [RING]
 
-unsigned int _ring_n_tiles(Ring *ring) {
-	static double pi = 2. * atan(1.);
+unsigned int _ring_n_tiles(Ring *ring, double l) {
+	static double pi = 0.;
+	unsigned int pi_ok = 0;
+	if (!pi_ok) {
+		pi = 2. * atan(1.);
+		pi_ok = 1;
+	}
 
 	assert(ring != NULL);
 	assert(ring->capsule != NULL);
@@ -127,14 +132,19 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	double alpha0, alpha1, divd;
 	double beta0, beta1;
 	//FIXME: Calcula PI no código mais de uma vez
-	static double pi = 2. * atan(1.);
-	static double two_pi = 2. * pi;
-	
+	static double pi = 0.;
+	static double two_pi = 0.;
+	unsigned int pi_ok = 0;
+	if (!pi_ok) {
+		pi = 2. * atan(1.);
+		pi_ok = 1;
+		two_pi = 2. * pi;
+	}
 	assert(ring != NULL);
 	assert(cap != NULL);
 
 	// número de pastilhas
-	n_tiles = _ring_n_tiles(ring);
+	n_tiles = _ring_n_tiles(ring, l);
 
 	ring->capsule = cap;
 	ring->n_tiles = n_tiles;
