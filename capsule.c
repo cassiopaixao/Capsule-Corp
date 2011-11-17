@@ -103,10 +103,44 @@ void tile_calc_temp(Tile *t) {
 	}
 }
 
+void tile_update_temp(Tile *t) {
+	assert(t != NULL);
+
+	t->last_temp = t->new_temp;
+}
+
+// BEGIN [RING]
+
+unsigned int _ring_n_tiles(Ring *ring) {
+	static double pi = 2. * atan(1.);
+
+	assert(ring != NULL);
+	assert(ring->capsule != NULL);
+	
+	return ((unsigned int)
+	 floor((2. * pi * sqrt(l / ring->capsule->a)) / ring->capsule->d));
+}
+
+void ring_init(Ring *ring, Capsule *cap, double l, double L) {
+
+	unsigned int n_tiles;
+
+	assert(ring != NULL);
+	assert(cap != NULL);
+
+	n_tiles = _ring_n_tiles(ring);
+
+	ring->capsule = cap;
+	ring->n_tiles = n_tiles;
+	ring->tiles = malloc(sizeof(Tile) * n_tiles);
+}
+
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
 	assert(ring != NULL);
 	assert(t1 != NULL && t2 != NULL);
 }
+
+// END [RING]
 
 void capsule_print_params(Capsule *c) {
 

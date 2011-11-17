@@ -24,10 +24,12 @@ typedef struct STile {
 } Tile;
 
 typedef struct SRing {
-
+	Tile *tiles; // array de tiles
+	unsigned int n_tiles;
+	struct SCapsule *capsule;
 } Ring;
 
-typedef struct {
+typedef struct SCapsule {
 
 	double h,         // altura
 	       a,
@@ -55,6 +57,8 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 void tile_link(Tile *t, Tile *left, Tile *right);
 // Calcula temperatura do próximo timestep
 void tile_calc_temp(Tile *t);
+// Atualiza temperatura da pastilha
+void tile_update_temp(Tile *t);
 
 //-------------*-----------
 // Anel
