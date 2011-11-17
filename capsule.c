@@ -28,4 +28,6 @@ void capsule_print_params(Capsule *c) {
 	printf("vel = ");
 	v3d_print(&c->vel);
 	printf("\n");
+
+	printf("steps = %u\n", c->steps);
 }
