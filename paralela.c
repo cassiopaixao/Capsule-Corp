@@ -4,6 +4,8 @@
 #include "capsule.h"
 #include "mymath.h"
 
+#define DEBUG
+
 static Capsule capsule;
 
 double prox_linha(FILE *arq){
@@ -60,10 +62,22 @@ static inline void parse_input() {
 
 int main(int argc, char **argv) {
 
-	parse_input();
+    // configura parametros
+    parse_input();
 
-	capsule_print_params(&capsule);
+    #ifdef DEBUG
+    // imprime parametros
+    capsule_print_params(&capsule);
+    #endif /* DEBUG */
 
-	return EXIT_SUCCESS;
+    // inicializa a capsula (t = 0)
+    capsule_init(&capsule);
+
+    //executa as iterações
+    capsule_iterate(&capsule);
+
+    // imprime saida
+    capsule_output(&capsule);
+   
+    return EXIT_SUCCESS;
 }
-
