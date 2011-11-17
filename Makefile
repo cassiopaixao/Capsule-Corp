@@ -1,6 +1,8 @@
 
+LIBS = -lm
+
 all: capsule.o paralela.o mymath.o
-	gcc $? -o ep
+	gcc $? $(LIBS) -o ep
 
 %.o: %.c
 	gcc -c $^ -o $@
