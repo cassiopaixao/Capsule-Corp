@@ -122,17 +122,41 @@ unsigned int _ring_n_tiles(Ring *ring) {
 }
 
 void ring_init(Ring *ring, Capsule *cap, double l, double L) {
-
 	unsigned int n_tiles;
-
+	double z0, z1, r0, r1;
+	double alpha0, alpha1, divd;
+	double beta0, beta1;
+	//FIXME: Calcula PI no código mais de uma vez
+	static double pi = 2. * atan(1.);
+	static double two_pi = 2. * pi;
+	
 	assert(ring != NULL);
 	assert(cap != NULL);
 
+	// número de pastilhas
 	n_tiles = _ring_n_tiles(ring);
 
 	ring->capsule = cap;
 	ring->n_tiles = n_tiles;
-	ring->tiles = malloc(sizeof(Tile) * n_tiles);
+	ring->tiles = (Tile*) malloc(sizeof(Tile) * n_tiles);
+	
+	z0 = l;
+	z1 = L + l;
+	
+	// raios
+	r0 = sqrt(z0 / cap->a);
+	r1 = sqrt(z1 / cap->a);
+
+	// ângulo de cada pastilha
+	divd = cap->d / 2.;
+	alpha0 = 2 * asin(divd / r0);
+	alpha1 = 2 * asin(divd / r1);
+
+	// ângulo da diferença entre cada pastilha
+	beta0 = (two_pi - (n_tiles * alpha0)) / n_tiles;
+	beta1 = (two_pi - (n_tiles * alpha1)) / n_tiles;
+
+	//FIXME: Terminar init	
 }
 
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
