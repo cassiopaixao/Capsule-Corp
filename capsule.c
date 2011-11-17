@@ -171,3 +171,13 @@ void capsule_print_params(Capsule *c) {
 
 	printf("steps = %u\n", c->steps);
 }
+
+void capsule_init(Capsule *capsule) {
+}
+
+void capsule_iterate(Capsule *capsule) {
+}
+
+void capsule_output(Capsule *capsule) {
+}
+

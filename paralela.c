@@ -4,6 +4,8 @@
 #include "capsule.h"
 #include "mymath.h"
 
+#define DEBUG
+
 static Capsule capsule;
 
 static inline void parse_input(void) {
@@ -26,9 +28,22 @@ static inline void parse_input(void) {
 
 int main(int argc, char **argv) {
 
+	// configura parametros
 	parse_input();
 
+	#ifdef DEBUG
+	// imprime parametros
 	capsule_print_params(&capsule);
+	#endif /* DEBUG */
 
+	// inicializa a capsula (t = 0)
+	capsule_init(&capsule);
+
+	//executa as iterações
+	capsule_iterate(&capsule)
+
+	// imprime saida
+	capsule_output(&capsule);
+	
 	return EXIT_SUCCESS;
 }
