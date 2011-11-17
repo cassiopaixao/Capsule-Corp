@@ -24,7 +24,9 @@ typedef struct STile {
 } Tile;
 
 typedef struct SRing {
-
+        Tile* pastilha;    // pastilhas
+        
+        int qtd_pastilhas; // quantidade de pastilhas
 } Ring;
 
 typedef struct {
@@ -43,6 +45,10 @@ typedef struct {
 	       vel;
 
 	unsigned int steps;
+
+        Ring* anel;        // aneis
+        
+        int qtd_aneis;     // quantidade de anéis
 
 } Capsule;
 
@@ -65,9 +71,13 @@ void ring_neighborhood_temp(Ring *ring, double *t1, double *t2);
 // --------------*-------------
 // Cápsula
 // --------------*-------------
+// Imprime parâmetros da capsula
 void capsule_print_params(Capsule *capsule);
+// Inicializa a capsula (situação t=0)
 void capsule_init(Capsule *capsule);
+// Realiza as iterações
 void capsule_iterate(Capsule *capsule);
+// Imprime a saída
 void capsule_output(Capsule *capsule);
 
 #endif
