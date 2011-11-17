@@ -28,7 +28,7 @@ typedef struct SRing {
 typedef struct {
 
 	double h,         // altura
-	       a,
+	       a,         // fator de forma do parabolóide
 	       d,         // lado da pastilha
 	       alpha,     // parâmetro da função de atrito
 	       delta,     // parâmetro da função de atrito
@@ -46,5 +46,8 @@ typedef struct {
 
 void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d);
 void capsule_print_params(Capsule *capsule);
+void capsule_init(Capsule *capsule);
+void capsule_iterate(Capsule *capsule);
+void capsule_output(Capsule *capsule);
 
 #endif
