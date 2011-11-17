@@ -20,8 +20,7 @@ void v3d_minus(v3d *a, v3d *b, v3d *res) {
 	assert(b != NULL);
 	assert(res != NULL);
 
-	res->x = a->x - b->x;
-	res->y = a->y - b->y;
+	res->x = a->x - b->x;	res->y = a->y - b->y;
 	res->z = a->z - b->z;
 }
 
@@ -60,4 +59,15 @@ void v3d_print(v3d *v) {
 	assert(v != NULL);
 
 	printf("(%lf, %lf, %lf)", v->x, v->y, v->z);
+}
+
+double v3d_dot(v3d *a, v3d *b) {
+
+	assert(a != NULL);
+	assert(b != NULL);
+
+	return (
+	 a->x * b->x +
+	 a->y * b->y +
+	 a->z * b->z);
 }
