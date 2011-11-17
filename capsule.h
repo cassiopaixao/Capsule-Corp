@@ -37,7 +37,9 @@ typedef struct SRing {
 
         double  r0,             // raio menor (inferior)
                 r1,             // raio maior (superior)
-                temp_med;        // temperatura média das pastilhas
+                temp;        // temperatura média das pastilhas
+
+	struct SRing *next_ring, *previous_ring;
 } Ring;
 
 typedef struct SCapsule {

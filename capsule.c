@@ -114,6 +114,7 @@ void tile_update_temp(Tile *t) {
 unsigned int _ring_n_tiles(Ring *ring, double l) {
 	static double pi = 0.;
 	unsigned int pi_ok = 0;
+	//FIXME: Calcula PI no código mais de uma vez
 	if (!pi_ok) {
 		pi = 2. * atan(1.);
 		pi_ok = 1;
@@ -135,6 +136,12 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	static double pi = 0.;
 	static double two_pi = 0.;
 	unsigned int pi_ok = 0;
+	unsigned int i;
+	double x0, y0, X0, Y0;
+	double x1, y1, X1, Y1;
+	v3d a, b, c, d;
+	unsigned int next, prev;
+
 	if (!pi_ok) {
 		pi = 2. * atan(1.);
 		pi_ok = 1;
@@ -165,6 +172,39 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	// ângulo da diferença entre cada pastilha
 	beta0 = (two_pi - (n_tiles * alpha0)) / n_tiles;
 	beta1 = (two_pi - (n_tiles * alpha1)) / n_tiles;
+
+	// gera cada uma das pastilhas
+	for (i = 0; i < n_tiles; i++) {
+		x0 = r0 * cos( i * (alpha0 + beta0) );
+		y0 = r0 * sin( i * (alpha0 + beta0) );
+		
+		X0 = r0 * cos( (i+1) * (alpha0 + beta0) );
+		Y0 = r0 * sin( (i+1) * (alpha0 + beta0) );
+
+		x1 = r1 * cos( i * (alpha1 + beta1) );
+		y1 = r1 * sin( i * (alpha1 + beta1) );
+
+		X1 = r1 * cos( (i+1) * (alpha1 + beta1) );
+		Y1 = r1 * sin( (i+1) * (alpha1 + beta1) );
+
+		v3d_set(&a, x0, y0, z0);
+		v3d_set(&b, X0, Y0, z0);
+		v3d_set(&c, x1, y1, z1);
+		v3d_set(&d, X1, Y1, z1);
+
+		tile_init(&ring->tiles[i], cap, &a, &b, &c, &d, ring);
+	}
+
+	for (i = 0; i < n_tiles; i++) {
+		next = (i + 1) % n_tiles;
+		prev = (i - 1 + n_tiles) % n_tiles;
+
+		tile_link(&ring->tiles[i], &ring->tiles[prev], &ring->tiles[next]);
+	}
+
+	ring->temp = cap->theta_0;
+	ring->next_ring = NULL;
+	ring->previous_ring = NULL;
 
 	//FIXME: Terminar init	
 }
