@@ -437,6 +437,53 @@ void capsule_print_params(Capsule *c) {
 }
 
 void capsule_init(Capsule *capsule) {
+	
+	double alfa, beta, x_linha, y_linha, z_linha;
+
+	// rotacao em relacao ao eixo z (a fim de zerar y)
+	alfa = (capsule->pos.x == 0)
+		? 3.1415926535897932 / 2.0
+		: (-1) * atan( capsule->pos.y / capsule->pos.x );
+
+	// rotação do vetor velocidade
+	x_linha = capsule->vel.x * cos(alfa) - capsule->vel.y * sin(alfa);
+	y_linha = capsule->vel.x * sin(alfa) + capsule->vel.y * cos(alfa);
+
+	capsule->vel.x = x_linha;
+	capsule->vel.y = y_linha;
+	
+	// rotação do vetor posicao
+	x_linha = capsule->pos.x * cos(alfa) - capsule->pos.y * sin(alfa);
+	y_linha = capsule->pos.x * sin(alfa) + capsule->pos.y * cos(alfa);
+
+	capsule->pos.x = x_linha;
+	capsule->pos.y = y_linha;
+
+	// rotacao em relacao ao eixo x (a fim de zerar y)
+	beta = (capsule->pos.z == 0)
+		? 3.1415926535897932 / 2.0
+	 	:(-1) * atan( capsule->pos.x / capsule->pos.z );
+
+	// rotação do vetor velocidade
+	x_linha = capsule->vel.z * sin(beta) + capsule->vel.x * cos(beta);
+	z_linha = capsule->vel.z * cos(beta) - capsule->vel.x * sin(beta);	
+	
+	capsule->vel.x = x_linha;
+	capsule->vel.z = z_linha;	
+
+	// rotação do vetor posicao
+	x_linha = capsule->pos.z * sin(beta) + capsule->pos.x * cos(beta);
+	z_linha = capsule->pos.z * cos(beta) - capsule->pos.x * sin(beta);	
+	
+	capsule->pos.x = x_linha;
+	capsule->pos.z = z_linha;
+
+	if (capsule->pos.z > 0) {
+		capsule->vel.x = -capsule->vel.x;
+		capsule->vel.y = -capsule->vel.y;
+		capsule->vel.z = -capsule->vel.z;
+	}
+
 	mesh_init(&capsule->mesh, capsule);
 }
 
