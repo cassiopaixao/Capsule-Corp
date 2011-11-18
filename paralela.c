@@ -10,11 +10,14 @@ static Capsule capsule;
 
 double prox_linha(FILE *arq){
 
-	char Linha[100];
-	fgets(Linha, 100, arq);  // o 'fgets' lê até 99 caracteres ou até o '\n'
+	double val;
 
-	return atof (Linha);
-
+	//char Linha[100];
+	//fgets(Linha, 100, arq);  // o 'fgets' lê até 99 caracteres ou até o '\n'
+	//return atof (Linha);
+	
+	fscanf(arq, "%lf", &val);
+	return val;
 }
 
 static inline void parse_input() {
@@ -48,14 +51,14 @@ static inline void parse_input() {
 	capsule.theta_crit = prox_linha(arq);
 	capsule.theta_0 = prox_linha(arq);
 
-	float x, y, z;
-	fscanf(arq, "%f %f %f\n", &x, &y, &z);
+	double x, y, z;
+	fscanf(arq, "%lf %lf %lf\n", &x, &y, &z);
 	v3d_set(&capsule.pos, x, y, z);
 
-	fscanf(arq, "%f %f %f\n", &x, &y, &z);
+	fscanf(arq, "%lf %lf %lf\n", &x, &y, &z);
 	v3d_set(&capsule.vel, x, y, z);
 
-	capsule.steps = prox_linha(arq);	
+	capsule.steps = prox_linha(arq);
 
 	fclose(arq);
 }

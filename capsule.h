@@ -39,8 +39,25 @@ typedef struct SRing {
                 r1,             // raio maior (superior)
                 temp;        // temperatura média das pastilhas
 
-	struct SRing *next_ring, *previous_ring;
+	struct SRing *next_ring, *prev_ring;
 } Ring;
+
+typedef struct SCover {
+	Ring ring;
+
+	unsigned int bursted;
+	v3d normal;
+	double t; // tempo
+	double new_temp;
+	double last_temp;
+} Cover;
+
+typedef struct SMesh {
+	Ring *rings;
+	Cover cover;
+	unsigned int n_rings;
+	struct SCapsule *cap;
+} Mesh;
 
 typedef struct SCapsule {
 
@@ -63,6 +80,7 @@ typedef struct SCapsule {
         
         int qtd_aneis;  // quantidade de anéis
 
+	Mesh mesh;
 } Capsule;
 
 //-------------*-----------
@@ -75,13 +93,33 @@ void tile_link(Tile *t, Tile *left, Tile *right);
 // Calcula temperatura do próximo timestep
 void tile_calc_temp(Tile *t);
 // Atualiza temperatura da pastilha
-void tile_update_temp(Tile *t);
+double tile_update_temp(Tile *t);
 
 //-------------*-----------
 // Anel
 // ------------*-----------
 
+void ring_init(Ring *ring, Capsule *cap, double l, double L);
+void ring_calc_temp(Ring *ring);
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2);
+void ring_print(Ring *ring);
+void ring_update_temp(Ring *ring);
+
+// --------------*-------------
+// Calota
+// --------------*-------------
+
+void cover_init(Cover *c, Capsule *capsule);
+void cover_calc_temp(Cover *c);
+double cover_update_temp(Cover *c);
+void cover_print(Cover *c);
+
+// --------------*-------------
+// Mesh
+// --------------*-------------
+
+void mesh_init(Mesh *m, Capsule *cap);
+void mesh_print(Mesh *m);
 
 // --------------*-------------
 // Cápsula
