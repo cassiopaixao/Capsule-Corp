@@ -102,7 +102,7 @@ double tile_update_temp(Tile *t);
 void ring_init(Ring *ring, Capsule *cap, double l, double L);
 void ring_calc_temp(Ring *ring);
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2);
-void ring_print(Ring *ring);
+void ring_print(Ring *ring, FILE* file);
 void ring_update_temp(Ring *ring);
 
 // --------------*-------------
@@ -112,14 +112,14 @@ void ring_update_temp(Ring *ring);
 void cover_init(Cover *c, Capsule *capsule);
 void cover_calc_temp(Cover *c);
 double cover_update_temp(Cover *c);
-void cover_print(Cover *c);
+void cover_print(Cover *c, FILE* file);
 
 // --------------*-------------
 // Mesh
 // --------------*-------------
 
 void mesh_init(Mesh *m, Capsule *cap);
-void mesh_print(Mesh *m);
+void mesh_print(Mesh *m, FILE* file);
 
 // --------------*-------------
 // Cápsula
@@ -131,6 +131,6 @@ void capsule_init(Capsule *capsule);
 // Realiza as iterações
 void capsule_iterate(Capsule *capsule);
 // Imprime a saída
-void capsule_output(Capsule *capsule);
+void capsule_output(Capsule *capsule, const char* filename);
 
 #endif

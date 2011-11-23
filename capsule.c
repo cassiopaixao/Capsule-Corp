@@ -23,10 +23,10 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 	t->delta = cap->delta;
 	t->last_temp = cap->theta_0;
 	t->max_temp = cap->theta_crit;
-	
+
 	v3d_set(&t->vel, cap->vel.x, cap->vel.y, cap->vel.z);
 	v3d_set(&t->pos, cap->pos.x, cap->pos.y, cap->pos.z);
-	
+
 	v3d_minus(c, a, &vdl);
 	t->dl = v3d_length(&vdl);
 	t->d = cap->d;
@@ -72,8 +72,8 @@ static double _tile_perimenter_temp(Tile *t) {
 	td = t->d;
 
 	return ((t->left->last_temp + t->right->last_temp) * tdl +
-	        (t1 + t2) * td
-	        ) / (2.*(tdl + td));
+		    (t1 + t2) * td
+		    ) / (2.*(tdl + td));
 }
 
 void tile_calc_temp(Tile *t) {
@@ -91,13 +91,13 @@ void tile_calc_temp(Tile *t) {
 		vn = v3d_dot(&t->normal, &t->vel);
 		if (vn > 0.) {
 			double val;
-			
+		
 			val = t->t - t->t_0;
 			delta_atrito = t->alpha * vn * atan(val*val);
 		} else {
 			delta_atrito = 0.;
 		}
-		
+	
 		delta_dissip = t->delta * abs(vn);
 		t->new_temp = _tile_perimenter_temp(t) + delta_atrito - delta_dissip;
 
@@ -120,7 +120,7 @@ double tile_update_temp(Tile *t) {
 unsigned int _ring_n_tiles(Ring *ring, double l) {
 	assert(ring != NULL);
 	assert(ring->capsule != NULL);
-	
+
 	return ((unsigned int)
 	 floor((2. * MM_PI * sqrt(l / ring->capsule->a)) / ring->capsule->d));
 }
@@ -148,10 +148,10 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 
 	ring->n_tiles = n_tiles;
 	ring->tiles = (Tile*) malloc(sizeof(Tile) * n_tiles);
-	
+
 	z0 = l;
 	z1 = L + l;
-	
+
 	// raios
 	r0 = sqrt(z0 / cap->a);
 	r1 = sqrt(z1 / cap->a);
@@ -169,7 +169,7 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	for (i = 0; i < n_tiles; i++) {
 		x0 = r0 * cos( i * (alpha0 + beta0) );
 		y0 = r0 * sin( i * (alpha0 + beta0) );
-		
+	
 		X0 = r0 * cos( (i+1) * (alpha0 + beta0) );
 		Y0 = r0 * sin( (i+1) * (alpha0 + beta0) );
 
@@ -234,18 +234,18 @@ void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
 	*t2 = ring->prev_ring->temp;
 }
 
-void ring_print(Ring *ring) {
+void ring_print(Ring *ring, FILE *file) {
 	unsigned int i;
 
 	assert(ring != NULL);
 
-	printf("[nº of tiles = %d] ", ring->n_tiles);	
+	fprintf(file, "[nº of tiles = %d] ", ring->n_tiles);	
 
 	for (i = 0; i < ring->n_tiles; i++) {
-		printf("%.2lf[%d] ", ring->tiles[i].last_temp, ring->tiles[i].bursted);
+		fprintf(file, "%.2lf[%d] ", ring->tiles[i].last_temp, ring->tiles[i].bursted);
 	}
 
-	printf("\n");
+	fprintf(file, "\n");
 }
 
 // END [RING]
@@ -260,7 +260,7 @@ void cover_init(Cover *c, Capsule *capsule) {
 	c->ring.capsule = capsule;
 	v3d_set(&c->normal,
 	 -capsule->pos.x, -capsule->pos.y, -capsule->pos.z);
-	
+
 	c->ring.next_ring = NULL;
 	c->ring.temp = capsule->theta_0;
 	c->t = capsule->t_0;
@@ -269,7 +269,7 @@ void cover_init(Cover *c, Capsule *capsule) {
 }
 
 void cover_calc_temp(Cover *c) {
-	
+
 	assert(c != NULL);
 	assert(c->ring.next_ring != NULL);
 
@@ -292,7 +292,7 @@ void cover_calc_temp(Cover *c) {
 
 		delta_dissip = c->ring.capsule->delta * abs(vn);
 		c->new_temp = c->ring.next_ring->temp + delta_atrito - delta_dissip;
-	
+
 		if (c->new_temp > c->ring.capsule->theta_crit) {
 			c->bursted = 1;
 			c->new_temp = c->ring.next_ring->temp;
@@ -307,14 +307,14 @@ double cover_update_temp(Cover *c) {
 	return (c->ring.temp = c->last_temp = c->new_temp);
 }
 
-void cover_print(Cover *c) {
+void cover_print(Cover *c, FILE *file) {
 	assert(c != NULL);
 
 	if (c->bursted) {
-		printf("[bursted]");
+		fprintf(file, "[bursted]");
 	}
 
-	printf("cover: %.2f\n", c->last_temp);
+	fprintf(file, "cover: %.2f\n", c->last_temp);
 }
 
 // END [COVER]
@@ -328,7 +328,7 @@ void mesh_init(Mesh *m, Capsule *cap) {
 
 	assert(m != NULL);
 	assert(cap != NULL);
-	
+
 	tmp = 3 * (cap->d / MM_PI);
 	L = cap->a * ( tmp * tmp );
 	l = L;
@@ -348,7 +348,7 @@ void mesh_init(Mesh *m, Capsule *cap) {
 	l = L;
 
 	prev_ring = (Ring*) (&m->cover);
-	
+
 	while ((l + L) < cap->h) {
 		ring_init(&m->rings[i], cap, l, L);
 		m->rings[i].prev_ring = prev_ring;
@@ -366,21 +366,21 @@ void mesh_init(Mesh *m, Capsule *cap) {
 }
 
 
-void mesh_print(Mesh *m) {
+void mesh_print(Mesh *m, FILE* file) {
 	unsigned int i;
 
-	cover_print(&m->cover);
-	printf("number of rings: %u\n", m->n_rings);
-	
+	cover_print(&m->cover, file);
+	fprintf(file, "number of rings: %u\n", m->n_rings);
+
 	for (i = 0; i < m->n_rings; i++) {
-		ring_print(&m->rings[i]);
-		printf("\n");
+		ring_print(&m->rings[i], file);
+		fprintf(file, "\n");
 	}
 }
 
 void mesh_step(Mesh *m) {
 	unsigned int i;
-	
+
 	for (i = 0; i < m->n_rings; i++) {
 		ring_calc_temp(&m->rings[i]);
 	}
@@ -425,7 +425,7 @@ void capsule_print_params(Capsule *c) {
 }
 
 void capsule_init(Capsule *capsule) {
-	
+
 	double alfa, beta, x_linha, y_linha, z_linha;
 
 	// rotacao em relacao ao eixo z (a fim de zerar y)
@@ -439,7 +439,7 @@ void capsule_init(Capsule *capsule) {
 
 	capsule->vel.x = x_linha;
 	capsule->vel.y = y_linha;
-	
+
 	// rotação do vetor posicao
 	x_linha = capsule->pos.x * cos(alfa) - capsule->pos.y * sin(alfa);
 	y_linha = capsule->pos.x * sin(alfa) + capsule->pos.y * cos(alfa);
@@ -455,14 +455,14 @@ void capsule_init(Capsule *capsule) {
 	// rotação do vetor velocidade
 	x_linha = capsule->vel.z * sin(beta) + capsule->vel.x * cos(beta);
 	z_linha = capsule->vel.z * cos(beta) - capsule->vel.x * sin(beta);	
-	
+
 	capsule->vel.x = x_linha;
 	capsule->vel.z = z_linha;	
 
 	// rotação do vetor posicao
 	x_linha = capsule->pos.z * sin(beta) + capsule->pos.x * cos(beta);
 	z_linha = capsule->pos.z * cos(beta) - capsule->pos.x * sin(beta);	
-	
+
 	capsule->pos.x = x_linha;
 	capsule->pos.z = z_linha;
 
@@ -483,7 +483,12 @@ void capsule_iterate(Capsule *capsule) {
 	}
 }
 
-void capsule_output(Capsule *capsule) {
-	mesh_print(&capsule->mesh);
+void capsule_output(Capsule *capsule, const char* filename) {
+	FILE *file;
+	file = fopen(filename, "w+");
+
+	mesh_print(&capsule->mesh, file);
+
+	fclose(file);
 }
 

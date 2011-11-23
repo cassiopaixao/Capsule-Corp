@@ -20,7 +20,7 @@ double prox_linha(FILE *arq){
 	return val;
 }
 
-static inline void parse_input() {
+static inline void parse_input(const char* filename) {
 /*
     i["h"] = 122.0
     i["a"] = 1.0
@@ -38,7 +38,7 @@ static inline void parse_input() {
 	
 	FILE *arq;
 
-	arq = fopen("entrada.txt","rt");   /* Arquivo ASCII, para leitura */
+	arq = fopen(filename,"rt");   /* Arquivo ASCII, para leitura */
 
 
 	capsule.h = prox_linha(arq);
@@ -66,7 +66,7 @@ static inline void parse_input() {
 int main(int argc, char **argv) {
 
     // configura parametros
-    parse_input();
+    parse_input("entrada.txt");
 
     #ifdef DEBUG
     // imprime parametros
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     capsule_iterate(&capsule);
 
     // imprime saida
-    capsule_output(&capsule);
+    capsule_output(&capsule, "saida.txt");
    
     return EXIT_SUCCESS;
 }
