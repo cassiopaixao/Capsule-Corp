@@ -2,7 +2,10 @@
 LIBS = -lm
 
 all: capsule.o paralela.o mymath.o
-	gcc $? $(LIBS) -o ep
+	gcc -pg $? $(LIBS) -o ep
 
 %.o: %.c
-	gcc -c $^ -o $@
+	gcc -pg -c $^ -o $@
+
+clean:
+	rm *.o; rm ep

@@ -113,19 +113,11 @@ double tile_update_temp(Tile *t) {
 // BEGIN [RING]
 
 unsigned int _ring_n_tiles(Ring *ring, double l) {
-	static double pi = 0.;
-	unsigned int pi_ok = 0;
-	//FIXME: Calcula PI no código mais de uma vez
-	if (!pi_ok) {
-		pi = 4. * atan(1.);
-		pi_ok = 1;
-	}
-
 	assert(ring != NULL);
 	assert(ring->capsule != NULL);
 	
 	return ((unsigned int)
-	 floor((2. * pi * sqrt(l / ring->capsule->a)) / ring->capsule->d));
+	 floor((2. * MM_PI * sqrt(l / ring->capsule->a)) / ring->capsule->d));
 }
 
 void ring_init(Ring *ring, Capsule *cap, double l, double L) {
@@ -134,20 +126,13 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	double alpha0, alpha1, divd;
 	double beta0, beta1;
 	//FIXME: Calcula PI no código mais de uma vez
-	static double pi = 0.;
-	static double two_pi = 0.;
-	unsigned int pi_ok = 0;
+	static double two_pi = 2. * MM_PI;
 	unsigned int i;
 	double x0, y0, X0, Y0;
 	double x1, y1, X1, Y1;
 	v3d a, b, c, d;
 	unsigned int next, prev;
 
-	if (!pi_ok) {
-		pi = 4. * atan(1.);
-		pi_ok = 1;
-		two_pi = 2. * pi;
-	}
 	assert(ring != NULL);
 	assert(cap != NULL);
 
@@ -332,16 +317,13 @@ void cover_print(Cover *c) {
 
 void mesh_init(Mesh *m, Capsule *cap) {
 	double L, l, tmp;
-	double pi = 4. * atan(1.);
 	Ring *prev_ring;
 	unsigned int i;
 
 	assert(m != NULL);
 	assert(cap != NULL);
 	
-	pi = 4. * atan(1.);
-
-	tmp = 3 * (cap->d / pi);
+	tmp = 3 * (cap->d / MM_PI);
 	L = cap->a * ( tmp * tmp );
 	l = L;
 
@@ -360,7 +342,7 @@ void mesh_init(Mesh *m, Capsule *cap) {
 	l = L;
 
 	prev_ring = (Ring*) (&m->cover);
-		
+	
 	while ((l + L) < cap->h) {
 		ring_init(&m->rings[i], cap, l, L);
 		m->rings[i].prev_ring = prev_ring;

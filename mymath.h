@@ -5,6 +5,8 @@ typedef struct {
 	double x, y, z;
 } v3d;
 
+#define MM_PI 3.1415926535897932
+
 // v = (x, y, z)
 void v3d_set(v3d *v, double x, double y, double z);
 // res = a - b
