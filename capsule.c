@@ -392,6 +392,27 @@ void mesh_step(Mesh *m) {
 	cover_update_temp(&m->cover);
 }
 
+double mesh_temp_media_pastilhas(Mesh *m) {
+	unsigned int i, qtd_pastilhas = 0;
+	double soma = 0;
+
+	for (i=0; i < m->n_rings; i++) {
+		soma += (m->rings[i].temp)*(m->rings[i].n_tiles);
+		qtd_pastilhas += m->rings[i].n_tiles;
+	}
+
+	return soma / qtd_pastilhas;	
+}
+
+double mesh_temp_media_rejunte(Mesh *m) {
+	unsigned int i;
+	double soma = 0;
+	for (i=0; i < m->n_rings; i++) {
+		soma += m->rings[i].temp;
+	}
+	return soma / m->n_rings;
+}
+
 // END [MESH]
 
 void capsule_print_params(Capsule *c) {
@@ -406,11 +427,10 @@ void capsule_print_params(Capsule *c) {
 	 "alpha = %lf \n" \
 	 "delta = %lf \n" \
 	 "t_0 = %lf \n" \
-	 "t_inicial = %lf \n" \
 	 "theta_crit = %lf \n" \
 	 "theta_0 = %lf \n", 
 	 c->h, c->a, c->d, c->alpha, c->delta,
-	 c->t_0, c->t_inicial, c->theta_crit,
+	 c->t_0, c->theta_crit,
 	 c->theta_0);
 
 	printf("pos = ");
@@ -490,5 +510,9 @@ void capsule_output(Capsule *capsule, const char* filename) {
 	mesh_print(&capsule->mesh, file);
 
 	fclose(file);
+
+	printf("Temperatura média das pastilhas: %f\nTemperatura média do rejunte: %f\n",
+		mesh_temp_media_pastilhas(&capsule->mesh),
+		mesh_temp_media_rejunte(&capsule->mesh));
 }
 

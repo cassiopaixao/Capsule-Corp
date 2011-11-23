@@ -67,7 +67,6 @@ typedef struct SCapsule {
 	       alpha,           // parâmetro da função de atrito
 	       delta,           // parâmetro da função de atrito
 	       t_0,             // tempo inicial
-	       t_inicial,       
 	       theta_crit,      // temperatura em que as pastilhas explodem
 	       theta_0;         // temperatura inicial das pastilhas
 
@@ -119,7 +118,10 @@ void cover_print(Cover *c, FILE* file);
 // --------------*-------------
 
 void mesh_init(Mesh *m, Capsule *cap);
+void mesh_step(Mesh *m);
 void mesh_print(Mesh *m, FILE* file);
+double mesh_temp_media_pastilhas(Mesh *m);
+double mesh_temp_media_rejunte(Mesh *m);
 
 // --------------*-------------
 // Cápsula
