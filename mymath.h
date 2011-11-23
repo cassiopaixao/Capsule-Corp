@@ -20,4 +20,5 @@ void v3d_print(v3d *v);
 void v3d_cross(v3d *a, v3d *b, v3d *res);
 // res = a . b
 double v3d_dot(v3d *a, v3d *b);
+void v3d_normalize(v3d *a);
 #endif

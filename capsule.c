@@ -43,6 +43,8 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 	v3d_minus(d, a, &q);
 
 	v3d_cross(&p, &q, &t->normal);
+
+	v3d_normalize(&t->normal);
 }
 
 
@@ -58,6 +60,7 @@ void tile_link(Tile *t, Tile *left, Tile *right) {
 
 static double _tile_perimenter_temp(Tile *t) {
 	double t1, t2;
+	register double tdl, td;
 
 	assert(t != NULL);
 	assert(t->left != NULL);
@@ -65,10 +68,12 @@ static double _tile_perimenter_temp(Tile *t) {
 
 	ring_neighborhood_temp(t->ring, &t1, &t2);
 
-	return ((t->left->last_temp * t->dl) +
-	        (t->right->last_temp * t->dl) +
-	        (t1 * t->d) +
-	        (t2 * t->d)) / (t->dl * 2. + t->d * 2.);
+	tdl = t->dl;
+	td = t->d;
+
+	return ((t->left->last_temp + t->right->last_temp) * tdl +
+	        (t1 + t2) * td
+	        ) / (2.*(tdl + td));
 }
 
 void tile_calc_temp(Tile *t) {
@@ -200,6 +205,7 @@ void ring_calc_temp(Ring *ring) {
 
 	assert(ring != NULL);
 
+	//XXX: paralelizar aqui
 	for (i = 0; i < ring->n_tiles; i++) {
 		tile_calc_temp(&ring->tiles[i]);
 	}
@@ -424,7 +430,7 @@ void capsule_init(Capsule *capsule) {
 
 	// rotacao em relacao ao eixo z (a fim de zerar y)
 	alfa = (capsule->pos.x == 0)
-		? 3.1415926535897932 / 2.0
+		? M_PI / 2.0
 		: (-1) * atan( capsule->pos.y / capsule->pos.x );
 
 	// rotação do vetor velocidade
@@ -443,7 +449,7 @@ void capsule_init(Capsule *capsule) {
 
 	// rotacao em relacao ao eixo x (a fim de zerar y)
 	beta = (capsule->pos.z == 0)
-		? 3.1415926535897932 / 2.0
+		? M_PI / 2.0
 	 	:(-1) * atan( capsule->pos.x / capsule->pos.z );
 
 	// rotação do vetor velocidade

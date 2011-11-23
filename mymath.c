@@ -71,3 +71,18 @@ double v3d_dot(v3d *a, v3d *b) {
 	 a->y * b->y +
 	 a->z * b->z);
 }
+
+void v3d_normalize(v3d *a) {
+	
+	double mod;
+
+	assert(a != NULL);
+	
+	mod = v3d_length(a);
+
+	assert(fabs(mod) >= 1e-10);
+	
+	a->x /= mod;
+	a->y /= mod;
+	a->z /= mod;
+}

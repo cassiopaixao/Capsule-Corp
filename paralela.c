@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define DEBUG
+
 #include "capsule.h"
 #include "mymath.h"
-
-#define DEBUG
 
 static Capsule capsule;
 
