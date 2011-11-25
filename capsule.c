@@ -4,7 +4,7 @@
 
 #include "capsule.h"
 
-
+#define DEBUG
 
 #include <math.h>
 #include <assert.h>
@@ -427,7 +427,7 @@ double mesh_temp_media_pastilhas(Mesh *m) {
 		qtd_pastilhas += m->rings[i].n_tiles;
 	}
 
-	return soma / qtd_pastilhas;	
+	return soma / qtd_pastilhas;
 }
 
 double mesh_temp_media_rejunte(Mesh *m) {
@@ -472,6 +472,7 @@ void capsule_print_params(Capsule *c) {
 
 void capsule_init(Capsule *capsule) {
 
+/* início da rotação de vetores */
 	double alfa, beta, x_linha, y_linha, z_linha;
 
 	// rotacao em relacao ao eixo z (a fim de zerar x)
@@ -520,6 +521,7 @@ void capsule_init(Capsule *capsule) {
 
 		capsule->pos.z = -capsule->pos.z;
 	}
+/* fim da rotação de vetores */
 
 	mesh_init(&capsule->mesh, capsule);
 }
