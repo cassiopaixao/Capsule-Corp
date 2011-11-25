@@ -4,6 +4,8 @@
 
 #include "capsule.h"
 
+
+
 #include <math.h>
 #include <assert.h>
 
@@ -235,14 +237,28 @@ void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
 }
 
 void ring_print(Ring *ring, FILE *file) {
+	/* ===== arquivo de saída =====
+	[OK] Primeira linha: a, h e d.
+	[OK] Segunda linha: temperatura da calota.
+	[OK] Terceira linha: número de anéis.
+	Linhas subsequentes: um anel por linha, com o número de pastilhas na primeira
+		posição, seguido pelas temperaturas de cada uma. Suponha as pastilhas
+		dispostas no sentido horário, quando se olha de frente para o vértice
+		do paraboloide. Comece pelo topo do anel.
+	
+	Temperatura positiva indica presença, um valor negativo indica a temperatura
+	do rejunte na posição (com o valor trocado). Valores em Celsius.
+	*/
+
 	unsigned int i;
 
 	assert(ring != NULL);
 
-	fprintf(file, "[nº of tiles = %d] ", ring->n_tiles);	
+	fprintf(file, "%d", ring->n_tiles);
 
 	for (i = 0; i < ring->n_tiles; i++) {
-		fprintf(file, "%.2lf[%d] ", ring->tiles[i].last_temp, ring->tiles[i].bursted);
+		fprintf(file, " %.2lf",
+			((ring->tiles[i].bursted ? -1 : 1) * ring->tiles[i].last_temp));
 	}
 
 	fprintf(file, "\n");
@@ -310,11 +326,8 @@ double cover_update_temp(Cover *c) {
 void cover_print(Cover *c, FILE *file) {
 	assert(c != NULL);
 
-	if (c->bursted) {
-		fprintf(file, "[bursted]");
-	}
-
-	fprintf(file, "cover: %.2f\n", c->last_temp);
+	fprintf(file, "%.2f\n",
+		((c->bursted) ? -1 : 1 ) * c->last_temp);
 }
 
 // END [COVER]
@@ -367,14 +380,27 @@ void mesh_init(Mesh *m, Capsule *cap) {
 
 
 void mesh_print(Mesh *m, FILE* file) {
+	/* ===== arquivo de saída =====
+	[OK] Primeira linha: a, h e d.
+	Segunda linha: temperatura da calota.
+	Terceira linha: número de anéis.
+	Linhas subsequentes: um anel por linha, com o número de pastilhas na primeira
+		posição, seguido pelas temperaturas de cada uma. Suponha as pastilhas
+		dispostas no sentido horário, quando se olha de frente para o vértice
+		do paraboloide. Comece pelo topo do anel.
+	
+	Temperatura positiva indica presença, um valor negativo indica a temperatura
+	do rejunte na posição (com o valor trocado). Valores em Celsius.
+	*/
+
 	unsigned int i;
 
 	cover_print(&m->cover, file);
-	fprintf(file, "number of rings: %u\n", m->n_rings);
+
+	fprintf(file, "%u\n", m->n_rings);
 
 	for (i = 0; i < m->n_rings; i++) {
 		ring_print(&m->rings[i], file);
-		fprintf(file, "\n");
 	}
 }
 
@@ -448,7 +474,7 @@ void capsule_init(Capsule *capsule) {
 
 	double alfa, beta, x_linha, y_linha, z_linha;
 
-	// rotacao em relacao ao eixo z (a fim de zerar y)
+	// rotacao em relacao ao eixo z (a fim de zerar x)
 	alfa = (capsule->pos.x == 0)
 		? M_PI / 2.0
 		: (-1) * atan( capsule->pos.y / capsule->pos.x );
@@ -485,11 +511,14 @@ void capsule_init(Capsule *capsule) {
 
 	capsule->pos.x = x_linha;
 	capsule->pos.z = z_linha;
-
+	
+	// se o vetor posição aponta para cima, inverte os dois vetores.
 	if (capsule->pos.z > 0) {
 		capsule->vel.x = -capsule->vel.x;
 		capsule->vel.y = -capsule->vel.y;
 		capsule->vel.z = -capsule->vel.z;
+
+		capsule->pos.z = -capsule->pos.z;
 	}
 
 	mesh_init(&capsule->mesh, capsule);
@@ -506,6 +535,21 @@ void capsule_iterate(Capsule *capsule) {
 void capsule_output(Capsule *capsule, const char* filename) {
 	FILE *file;
 	file = fopen(filename, "w+");
+
+	/* ===== arquivo de saída =====
+	Primeira linha: a, h e d.
+	Segunda linha: temperatura da calota.
+	Terceira linha: número de anéis.
+	Linhas subsequentes: um anel por linha, com o número de pastilhas na primeira
+		posição, seguido pelas temperaturas de cada uma. Suponha as pastilhas
+		dispostas no sentido horário, quando se olha de frente para o vértice
+		do paraboloide. Comece pelo topo do anel.
+	
+	Temperatura positiva indica presença, um valor negativo indica a temperatura
+	do rejunte na posição (com o valor trocado). Valores em Celsius.
+	*/
+
+	fprintf(file, "%f %f %f\n", capsule->a, capsule->h, capsule->d);
 
 	mesh_print(&capsule->mesh, file);
 
