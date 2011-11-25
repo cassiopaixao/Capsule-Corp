@@ -4,20 +4,20 @@
 
 #include "capsule.h"
 
-#define DEBUG
-
 #include <math.h>
 #include <assert.h>
 
 void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring) {
 	v3d vdl, p, q;
 
+	#ifdef DEBUG
 	assert(t != NULL);
 	assert(cap != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
 	assert(c != NULL);
 	assert(d != NULL);
+	#endif
 
 	t->t_0 = cap->t_0;
 	t->t = t->t_0;
@@ -52,9 +52,11 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 
 void tile_link(Tile *t, Tile *left, Tile *right) {
 
+	#ifdef DEBUG
 	assert(t != NULL);
 	assert(left != NULL);
 	assert(right != NULL);
+	#endif
 
 	t->left = left;
 	t->right = right;
@@ -64,9 +66,11 @@ static double _tile_perimenter_temp(Tile *t) {
 	double t1, t2;
 	register double tdl, td;
 
+	#ifdef DEBUG
 	assert(t != NULL);
 	assert(t->left != NULL);
 	assert(t->right != NULL);
+	#endif
 
 	ring_neighborhood_temp(t->ring, &t1, &t2);
 
@@ -79,9 +83,12 @@ static double _tile_perimenter_temp(Tile *t) {
 }
 
 void tile_calc_temp(Tile *t) {
+
+	#ifdef DEBUG
 	assert(t != NULL);
 	assert(t->left != NULL);
 	assert(t->right != NULL);
+	#endif
 
 	t->t += 1;
 	if (t->bursted) { // estourou?
@@ -111,7 +118,9 @@ void tile_calc_temp(Tile *t) {
 }
 
 double tile_update_temp(Tile *t) {
+	#ifdef DEBUG
 	assert(t != NULL);
+	#endif
 
 	t->last_temp = t->new_temp;
 	return t->last_temp;
@@ -120,8 +129,10 @@ double tile_update_temp(Tile *t) {
 // BEGIN [RING]
 
 unsigned int _ring_n_tiles(Ring *ring, double l) {
+	#ifdef DEBUG
 	assert(ring != NULL);
 	assert(ring->capsule != NULL);
+	#endif
 
 	return ((unsigned int)
 	 floor((2. * MM_PI * sqrt(l / ring->capsule->a)) / ring->capsule->d));
@@ -132,7 +143,6 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	double z0, z1, r0, r1;
 	double alpha0, alpha1, divd;
 	double beta0, beta1;
-	//FIXME: Calcula PI no código mais de uma vez
 	static double two_pi = 2. * MM_PI;
 	unsigned int i;
 	double x0, y0, X0, Y0;
@@ -140,8 +150,10 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	v3d a, b, c, d;
 	unsigned int next, prev;
 
+	#ifdef DEBUG
 	assert(ring != NULL);
 	assert(cap != NULL);
+	#endif
 
 	// número de pastilhas
 
@@ -205,7 +217,9 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 void ring_calc_temp(Ring *ring) {
 	unsigned int i;
 
+	#ifdef DEBUG
 	assert(ring != NULL);
+	#endif
 
 	//XXX: paralelizar aqui
 	for (i = 0; i < ring->n_tiles; i++) {
@@ -227,10 +241,12 @@ void ring_update_temp(Ring *ring) {
 }
 
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
+	#ifdef DEBUG
 	assert(ring != NULL);
 	assert(t1 != NULL && t2 != NULL);
 	assert(ring->next_ring != NULL);
 	assert(ring->prev_ring != NULL);
+	#endif
 
 	*t1 = ring->next_ring->temp;
 	*t2 = ring->prev_ring->temp;
@@ -286,8 +302,10 @@ void cover_init(Cover *c, Capsule *capsule) {
 
 void cover_calc_temp(Cover *c) {
 
+	#ifdef DEBUG
 	assert(c != NULL);
 	assert(c->ring.next_ring != NULL);
+	#endif
 
 	c->t += 1.;
 	if (c->bursted) { // estourou?
@@ -316,9 +334,10 @@ void cover_calc_temp(Cover *c) {
 	}
 }
 
-// FIXME: temp não é atualizado
 double cover_update_temp(Cover *c) {
+	#ifdef DEBUG
 	assert(c != NULL);
+	#endif
 
 	return (c->ring.temp = c->last_temp = c->new_temp);
 }
@@ -419,14 +438,26 @@ void mesh_step(Mesh *m) {
 }
 
 double mesh_temp_media_pastilhas(Mesh *m) {
-	unsigned int i, qtd_pastilhas = 0;
+	unsigned int i, j, qtd_pastilhas = 0;
 	double soma = 0;
 
-	for (i=0; i < m->n_rings; i++) {
-		soma += (m->rings[i].temp)*(m->rings[i].n_tiles);
-		qtd_pastilhas += m->rings[i].n_tiles;
+	if (!m->cover.bursted) {
+		qtd_pastilhas++;
+		soma += m->cover.last_temp;
 	}
 
+	for (i=0; i < m->n_rings; i++) {
+		for (j=0; j < m->rings[i].n_tiles; j++) {
+			if (!m->rings[i].tiles[j].bursted) {
+				soma += m->rings[i].tiles[j].last_temp;
+				qtd_pastilhas++;
+			}
+		}
+	}
+
+	if (qtd_pastilhas == 0) {
+		return 0;
+	}
 	return soma / qtd_pastilhas;
 }
 

@@ -73,7 +73,7 @@ typedef struct SCapsule {
 	v3d    pos,     // posição inicial
 	       vel;     // velocidade
 
-	unsigned int steps;
+	unsigned long int steps;
 
         Ring* anel;     // aneis
         

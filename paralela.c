@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEBUG
-
 #include "capsule.h"
 #include "mymath.h"
 
@@ -57,7 +55,8 @@ static inline void parse_input(const char* filename) {
 	fscanf(arq, "%lf %lf %lf\n", &x, &y, &z);
 	v3d_set(&capsule.vel, x, y, z);
 
-	capsule.steps = prox_linha(arq);
+	//capsule.steps = prox_linha(arq);
+	fscanf(arq, "%lu", &capsule.steps);
 
 	fclose(arq);
 }
