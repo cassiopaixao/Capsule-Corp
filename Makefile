@@ -1,7 +1,9 @@
 LIBS = -lgomp -lm
 ARCH = native
+OTIMIZACAO = -O3
+DEBUG = -DDEBUG
 NUM_CORES = `cat /proc/cpuinfo | grep processor | wc -l`
-FLAGS = -mtune=$(ARCH) -O3 -fopenmp -DNUM_THREADS=$(NUM_CORES) # -pg
+FLAGS = -mtune=$(ARCH) $(OTIMIZACAO) -fopenmp -DNUM_THREADS=$(NUM_CORES) $(DEBUG) # -pg
 
 all: capsule.o paralela.o mymath.o
 	gcc $? $(FLAGS) $(LIBS) -o ep
