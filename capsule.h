@@ -9,7 +9,7 @@ typedef struct STile {
 	       t,               // tempo corrente
 	       alpha,           // equação de atrito
 	       delta,           // equação de atrito
-	       last_temp,       // temperatura inicial,
+	       temp[2],		// temperaturas (do passo anterior e atual)
 	       max_temp;        // temperatura em que a pastilha explode
 	       v3d vel,         // velocidade
 	           pos;         // posição
@@ -26,8 +26,6 @@ typedef struct STile {
 	v3d    edges[4];
 
 	struct STile *left, *right;     // pastilhas ao lado
-
-	double new_temp;        // nova temperatura
 } Tile;
 
 typedef struct SRing {
@@ -47,9 +45,9 @@ typedef struct SCover {
 
 	unsigned int bursted;
 	v3d normal;
-	double t; // tempo
-	double new_temp;
-	double last_temp;
+	double t, 		// tempo
+		new_temp,	// temperatura atual
+		last_temp;	// temperatura do passo anterior
 } Cover;
 
 typedef struct SMesh {
@@ -90,19 +88,17 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 // Define pastilhas vizinhas
 void tile_link(Tile *t, Tile *left, Tile *right);
 // Calcula temperatura do próximo timestep
-void tile_calc_temp(Tile *t);
-// Atualiza temperatura da pastilha
-double tile_update_temp(Tile *t);
+void tile_calc_temp(Tile *t, int step_mod_2);
 
 //-------------*-----------
 // Anel
 // ------------*-----------
 
 void ring_init(Ring *ring, Capsule *cap, double l, double L);
-void ring_calc_temp(Ring *ring);
+void ring_calc_temp(Ring *ring, int step_mod_2);
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2);
-void ring_print(Ring *ring, FILE* file);
-void ring_update_temp(Ring *ring);
+void ring_print(Ring *ring, FILE* file, int step_mod_2);
+void ring_update_temp(Ring *ring, int step_mod_2);
 
 // --------------*-------------
 // Calota
@@ -118,9 +114,9 @@ void cover_print(Cover *c, FILE* file);
 // --------------*-------------
 
 void mesh_init(Mesh *m, Capsule *cap);
-void mesh_step(Mesh *m);
-void mesh_print(Mesh *m, FILE* file);
-double mesh_temp_media_pastilhas(Mesh *m);
+void mesh_step(Mesh *m, int step_mod_2);
+void mesh_print(Mesh *m, FILE* file, int steps_mod_2);
+double mesh_temp_media_pastilhas(Mesh *m, int steps_mod_2);
 double mesh_temp_media_rejunte(Mesh *m);
 
 // --------------*-------------

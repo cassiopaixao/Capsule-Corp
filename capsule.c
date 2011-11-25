@@ -23,7 +23,7 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 	t->t = t->t_0;
 	t->alpha = cap->alpha;
 	t->delta = cap->delta;
-	t->last_temp = cap->theta_0;
+	t->temp[0] = t->temp[1] = cap->theta_0;
 	t->max_temp = cap->theta_crit;
 
 	v3d_set(&t->vel, cap->vel.x, cap->vel.y, cap->vel.z);
@@ -62,7 +62,7 @@ void tile_link(Tile *t, Tile *left, Tile *right) {
 	t->right = right;
 }
 
-static double _tile_perimenter_temp(Tile *t) {
+static double _tile_perimenter_temp(Tile *t, int not_step_mod_2) {
 	double t1, t2;
 	register double tdl, td;
 
@@ -77,12 +77,12 @@ static double _tile_perimenter_temp(Tile *t) {
 	tdl = t->dl;
 	td = t->d;
 
-	return ((t->left->last_temp + t->right->last_temp) * tdl +
+	return ((t->left->temp[not_step_mod_2] + t->right->temp[not_step_mod_2]) * tdl +
 		    (t1 + t2) * td
 		    ) / (2.*(tdl + td));
 }
 
-void tile_calc_temp(Tile *t) {
+void tile_calc_temp(Tile *t, int step_mod_2) {
 
 	#ifdef DEBUG
 	assert(t != NULL);
@@ -93,7 +93,7 @@ void tile_calc_temp(Tile *t) {
 	t->t += 1;
 	if (t->bursted) { // estourou?
 		// só rejunte
-		t->new_temp = _tile_perimenter_temp(t);
+		t->temp[step_mod_2] = _tile_perimenter_temp(t, (step_mod_2+1)%2);
 	} else {
 		double vn, delta_atrito, delta_dissip;
 
@@ -108,22 +108,13 @@ void tile_calc_temp(Tile *t) {
 		}
 	
 		delta_dissip = t->delta * abs(vn);
-		t->new_temp = _tile_perimenter_temp(t) + delta_atrito - delta_dissip;
+		t->temp[step_mod_2] = _tile_perimenter_temp(t, (step_mod_2+1)%2) + delta_atrito - delta_dissip;
 
-		if (t->new_temp > t->ring->capsule->theta_crit) {
+		if (t->temp[step_mod_2] > t->ring->capsule->theta_crit) {
 			t->bursted = 1; // estourou
-			t->new_temp = (t->left->last_temp + t->right->last_temp)/2.;
+			t->temp[step_mod_2] = (t->left->temp[(step_mod_2+1)%2] + t->right->temp[(step_mod_2+1)%2])/2.;
 		}
 	}
-}
-
-double tile_update_temp(Tile *t) {
-	#ifdef DEBUG
-	assert(t != NULL);
-	#endif
-
-	t->last_temp = t->new_temp;
-	return t->last_temp;
 }
 
 // BEGIN [RING]
@@ -214,7 +205,7 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 }
 
 
-void ring_calc_temp(Ring *ring) {
+void ring_calc_temp(Ring *ring, int step_mod_2) {
 	unsigned int i;
 
 	#ifdef DEBUG
@@ -223,18 +214,18 @@ void ring_calc_temp(Ring *ring) {
 
 	//XXX: paralelizar aqui
 	for (i = 0; i < ring->n_tiles; i++) {
-		tile_calc_temp(&ring->tiles[i]);
+		tile_calc_temp(&ring->tiles[i], step_mod_2);
 	}
 }
 
 // 
-void ring_update_temp(Ring *ring) {
+void ring_update_temp(Ring *ring, int step_mod_2) {
 	double s;
 	unsigned int i;	
 
 	s = 0.;
 	for (i = 0; i < ring->n_tiles; i++) {
-		s += tile_update_temp(&ring->tiles[i]);
+		s += ring->tiles[i].temp[step_mod_2];
 	}
 
 	ring->temp = s / ((double) ring->n_tiles);
@@ -252,7 +243,7 @@ void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
 	*t2 = ring->prev_ring->temp;
 }
 
-void ring_print(Ring *ring, FILE *file) {
+void ring_print(Ring *ring, FILE *file, int step_mod_2) {
 	/* ===== arquivo de saída =====
 	[OK] Primeira linha: a, h e d.
 	[OK] Segunda linha: temperatura da calota.
@@ -274,7 +265,7 @@ void ring_print(Ring *ring, FILE *file) {
 
 	for (i = 0; i < ring->n_tiles; i++) {
 		fprintf(file, " %.2lf",
-			((ring->tiles[i].bursted ? -1 : 1) * ring->tiles[i].last_temp));
+			((ring->tiles[i].bursted ? -1 : 1) * ring->tiles[i].temp[step_mod_2]));
 	}
 
 	fprintf(file, "\n");
@@ -297,7 +288,7 @@ void cover_init(Cover *c, Capsule *capsule) {
 	c->ring.temp = capsule->theta_0;
 	c->t = capsule->t_0;
 	c->bursted = 0;
-	c->last_temp = c->ring.temp;
+	c->last_temp = c->new_temp = c->ring.temp;
 }
 
 void cover_calc_temp(Cover *c) {
@@ -398,7 +389,7 @@ void mesh_init(Mesh *m, Capsule *cap) {
 }
 
 
-void mesh_print(Mesh *m, FILE* file) {
+void mesh_print(Mesh *m, FILE* file, int step_mod_2) {
 	/* ===== arquivo de saída =====
 	[OK] Primeira linha: a, h e d.
 	Segunda linha: temperatura da calota.
@@ -419,25 +410,25 @@ void mesh_print(Mesh *m, FILE* file) {
 	fprintf(file, "%u\n", m->n_rings);
 
 	for (i = 0; i < m->n_rings; i++) {
-		ring_print(&m->rings[i], file);
+		ring_print(&m->rings[i], file, step_mod_2);
 	}
 }
 
-void mesh_step(Mesh *m) {
+void mesh_step(Mesh *m, int step_mod_2) {
 	unsigned int i;
 
 	for (i = 0; i < m->n_rings; i++) {
-		ring_calc_temp(&m->rings[i]);
+		ring_calc_temp(&m->rings[i], step_mod_2);
 	}
 	cover_calc_temp(&m->cover);
 
 	for (i = 0; i < m->n_rings; i++) {
-		ring_update_temp(&m->rings[i]);
+		ring_update_temp(&m->rings[i], step_mod_2);
 	}
 	cover_update_temp(&m->cover);
 }
 
-double mesh_temp_media_pastilhas(Mesh *m) {
+double mesh_temp_media_pastilhas(Mesh *m, int step_mod_2) {
 	unsigned int i, j, qtd_pastilhas = 0;
 	double soma = 0;
 
@@ -449,7 +440,7 @@ double mesh_temp_media_pastilhas(Mesh *m) {
 	for (i=0; i < m->n_rings; i++) {
 		for (j=0; j < m->rings[i].n_tiles; j++) {
 			if (!m->rings[i].tiles[j].bursted) {
-				soma += m->rings[i].tiles[j].last_temp;
+				soma += m->rings[i].tiles[j].temp[step_mod_2];
 				qtd_pastilhas++;
 			}
 		}
@@ -498,7 +489,7 @@ void capsule_print_params(Capsule *c) {
 	v3d_print(&c->vel);
 	printf("\n");
 
-	printf("steps = %u\n", c->steps);
+	printf("steps = %lu\n", c->steps);
 }
 
 void capsule_init(Capsule *capsule) {
@@ -558,10 +549,10 @@ void capsule_init(Capsule *capsule) {
 }
 
 void capsule_iterate(Capsule *capsule) {
-	unsigned int i;
+	unsigned long int i;
 
 	for (i = 0; i < capsule->steps; i++) {
-		mesh_step(&capsule->mesh);
+		mesh_step(&capsule->mesh, i%2);
 	}
 }
 
@@ -584,12 +575,12 @@ void capsule_output(Capsule *capsule, const char* filename) {
 
 	fprintf(file, "%f %f %f\n", capsule->a, capsule->h, capsule->d);
 
-	mesh_print(&capsule->mesh, file);
+	mesh_print(&capsule->mesh, file, (capsule->steps-1)%2);
 
 	fclose(file);
 
 	printf("Temperatura média das pastilhas: %f\nTemperatura média do rejunte: %f\n",
-		mesh_temp_media_pastilhas(&capsule->mesh),
+		mesh_temp_media_pastilhas(&capsule->mesh, (capsule->steps-1)%2),
 		mesh_temp_media_rejunte(&capsule->mesh));
 }
 
