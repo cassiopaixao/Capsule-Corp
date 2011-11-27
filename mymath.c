@@ -63,8 +63,10 @@ void v3d_print(v3d *v) {
 
 double v3d_dot(v3d *a, v3d *b) {
 
+	#ifdef DEBUG
 	assert(a != NULL);
 	assert(b != NULL);
+	#endif
 
 	return (
 	 a->x * b->x +
