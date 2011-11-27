@@ -97,6 +97,7 @@ void tile_calc_temp(Tile *t, int step_mod_2);
 void ring_init(Ring *ring, Capsule *cap, double l, double L);
 void ring_calc_temp(Ring *ring, int step_mod_2);
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2);
+double ring_neighborhood_temp_plus(Ring *ring);
 void ring_print(Ring *ring, FILE* file, int step_mod_2);
 void ring_update_temp(Ring *ring, int step_mod_2);
 void ring_free(Ring *ring);

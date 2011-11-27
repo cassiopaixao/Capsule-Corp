@@ -62,24 +62,23 @@ void tile_link(Tile *t, Tile *left, Tile *right) {
 	t->right = right;
 }
 
+// média das temperaturas na vizinhança
 static double _tile_perimenter_temp(Tile *t, int not_step_mod_2) {
-	double t1, t2;
-	register double tdl, td;
+//	double t1, t2;
 
 	#ifdef DEBUG
 	assert(t != NULL);
 	assert(t->left != NULL);
 	assert(t->right != NULL);
 	#endif
-
-	ring_neighborhood_temp(t->ring, &t1, &t2);
-
-	tdl = t->dl;
-	td = t->d;
-
-	return ((t->left->temp[not_step_mod_2] + t->right->temp[not_step_mod_2]) * tdl +
-		    (t1 + t2) * td
-		    ) / (2.*(tdl + td));
+/*
+	return ((t->left->temp[not_step_mod_2] + t->right->temp[not_step_mod_2]) * t->dl +
+		    (t1 + t2) * t->d
+		    ) / (2.*(t->dl + t->d));
+*/
+	return ((t->left->temp[not_step_mod_2] + t->right->temp[not_step_mod_2]) * t->dl +
+		    (ring_neighborhood_temp_plus(t->ring)) * t->d
+		    ) / (2.*(t->dl + t->d));
 }
 
 void tile_calc_temp(Tile *t, int step_mod_2) {
@@ -95,7 +94,9 @@ void tile_calc_temp(Tile *t, int step_mod_2) {
 		// só rejunte
 		t->temp[step_mod_2] = _tile_perimenter_temp(t, (step_mod_2+1)%2);
 	} else {
-		double vn, delta_atrito, delta_dissip;
+		double vn,
+			delta_atrito = 0.,
+			delta_dissip;
 
 		vn = v3d_dot(&t->normal, &t->vel);
 		if (vn > 0.) {
@@ -103,8 +104,6 @@ void tile_calc_temp(Tile *t, int step_mod_2) {
 		
 			val = t->t - t->t_0;
 			delta_atrito = t->alpha * vn * atan(val*val);
-		} else {
-			delta_atrito = 0.;
 		}
 	
 		delta_dissip = t->delta * abs(vn);
@@ -247,6 +246,17 @@ void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
 	*t1 = ring->next_ring->temp;
 	*t2 = ring->prev_ring->temp;
 }
+
+double inline ring_neighborhood_temp_plus(Ring *ring) {
+	#ifdef DEBUG
+	assert(ring != NULL);
+	assert(ring->next_ring != NULL);
+	assert(ring->prev_ring != NULL);
+	#endif
+
+	return ring->next_ring->temp + ring->prev_ring->temp;
+}
+
 
 void ring_print(Ring *ring, FILE *file, int step_mod_2) {
 	/* ===== arquivo de saída =====
