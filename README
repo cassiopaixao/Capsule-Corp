@@ -1,4 +1,90 @@
-EP de MAC 5742 - 2011/2
+       ==================================================================
+			                Universidade de São Paulo
+		              Instituto de Matemática e Estatística
+       ==================================================================
+        Nome: Cássio Alexandre Paixão Silva Alkmin    NUSP: 7798535
+              Ewerton Rodrigues Andrade                     7781335
+              Gesner Borges Taquary Junior                  7797072
 
-DescriÃ§Ã£o do EP em http://paca.ime.usp.br/course/view.php?id=559
-Exemplo de alteraÃ§Ã£o
+        MAC5742 - Introdução à Computação Paralela e Distribuída
+        Professor: Marco Dimas Gubitoso
+       ==================================================================
+
+		                     -----------------
+                       Projeto de Cápsula Alienígena
+		                  -----------------------
+
+-----------
+Objetivo
+-----------
+O programa tem como objetivo simular a distribuição de calor em pastilhas de uma
+cápsula que está entrando na atmosfera em alta velocidade. Seguindo especifica-
+ção do problema, são consideradas diversas simplificações e certas complicações.
+Como forma de aplicação dos conhecimentos adquiridos, a execução do programa
+deve ocorrer de forma paralelizada, aproveitando recursos disponibilizados pelos
+processadores multi-core.
+
+-----------------
+Entradas do Programa
+-----------------
+O programa recebe como entrada os parâmetros que descrevem a cápsula, tanto geo-
+metria quanto propriedades das pastilhas que a revestem, e o ambiente, na se-
+guinte ordem:
+
+1. h            - corresponde à altura da cápsula, medida da base até o vértice.
+2. a            - corresponde ao fator de forma o paraboloide.
+3. d            - corresponde ao lado da pastilha.
+4. alpha        - corresponde a um parâmetro da função de atrito.
+5. t_0          - corresponde a um parâmetro da função de atrito.
+6. delta        - corresponde ao parâmetro da função de dissipação.
+7. theta_crit   - corresponde à temperatura na qual a pastilha se desintegra.
+8. theta_0      - corresponde à temperatura inicial.
+9. pos          - Vetor posição (valores de x, y e z separados por espaço).
+10.vel          - Vetor velocidade (valores de x, y e z separados por espaço).
+11. steps       - corresponde ao número de iterações que devem ser calculadas.
+
+O programa faz a leitura dessas variáveis através do arquivo entrada.txt, o qual
+possui, nessa ordem, apenas os valores que correspondem a cada uma delas.
+
+--------------
+Como executar?
+--------------
+Para facilitar esse processo foi criado o 'Makefile', para compilar o programa.
+Para isto basta entrar no diretório em que está os arquivos do programa e
+digitar o comando 'make', utilizando o terminal.
+
+Ao compilar o código fonte, será criado um arquivo executável de nome 'ep'.
+É importante verificar se o arquivo de entrada 'entrada.txt' está presente no
+diretório. Para modificar os valores que deseja passar como entrada, basta
+editar este arquivo.
+
+Para executar, execute no terminal "./ep".
+
+--------
+Saídas
+--------
+O programa simula a distribuição das temperaturas a cada passo e escreve um
+arquivo texto na saída (saida.txt). Além disso, o programa imprime no terminal a
+temperatura média das pastilhas e do rejunte.
+
+--------
+Formato do arquivo de saída
+--------
+O arquivo de saída (saida.txt) possui os valores colocados em linhas, da
+seguinte forma:
+
+-> Primeira linha: a, h e d.
+-> Segunda linha: temperatura da calota.
+-> Terceira linha: número de anéis.
+-> Linhas subsequentes: um anel por linha, com o número de pastilhas na primeira
+posição, seguido pelas temperaturas de cada uma. Começando pelo topo do anel.
+
+OBS: Temperatura positiva indica a temperatura da pastilha existente na posição,
+enquanto uma negativa indica a temperatura do rejunte na posição.
+Os valores das temperaturas são dados em Celsius.
+
+
+               ==================================================
+                          Data: 28 de Novembro de 2011
+               ==================================================
+

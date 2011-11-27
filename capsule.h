@@ -99,6 +99,7 @@ void ring_calc_temp(Ring *ring, int step_mod_2);
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2);
 void ring_print(Ring *ring, FILE* file, int step_mod_2);
 void ring_update_temp(Ring *ring, int step_mod_2);
+void ring_free(Ring *ring);
 
 // --------------*-------------
 // Calota
@@ -118,6 +119,7 @@ void mesh_step(Mesh *m, int step_mod_2);
 void mesh_print(Mesh *m, FILE* file, int steps_mod_2);
 double mesh_temp_media_pastilhas(Mesh *m, int steps_mod_2);
 double mesh_temp_media_rejunte(Mesh *m);
+void mesh_free(Mesh *m);
 
 // --------------*-------------
 // Cápsula
@@ -130,5 +132,7 @@ void capsule_init(Capsule *capsule);
 void capsule_iterate(Capsule *capsule);
 // Imprime a saída
 void capsule_output(Capsule *capsule, const char* filename);
+// Libera recursos utilizados
+void capsule_free(Capsule *capsule);
 
 #endif

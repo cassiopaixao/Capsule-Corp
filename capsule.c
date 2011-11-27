@@ -205,6 +205,11 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 }
 
 
+void ring_free(Ring *ring) {
+	free(ring->tiles);
+}
+
+
 void ring_calc_temp(Ring *ring, int step_mod_2) {
 	unsigned int i;
 
@@ -389,6 +394,16 @@ void mesh_init(Mesh *m, Capsule *cap) {
 }
 
 
+void mesh_free(Mesh *m) {
+	unsigned int i, n_rings;
+	n_rings = m->n_rings;
+	for (i=0; i<n_rings; i++) {
+		ring_free(&m->rings[i]);
+	}
+	free(m->rings);
+}
+
+
 void mesh_print(Mesh *m, FILE* file, int step_mod_2) {
 	/* ===== arquivo de saída =====
 	[OK] Primeira linha: a, h e d.
@@ -546,6 +561,10 @@ void capsule_init(Capsule *capsule) {
 /* fim da rotação de vetores */
 
 	mesh_init(&capsule->mesh, capsule);
+}
+
+void capsule_free(Capsule *capsule) {
+	mesh_free(&capsule->mesh);
 }
 
 void capsule_iterate(Capsule *capsule) {
