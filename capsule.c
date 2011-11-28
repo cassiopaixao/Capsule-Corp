@@ -63,7 +63,7 @@ void tile_link(Tile *t, Tile *left, Tile *right) {
 }
 
 // média das temperaturas na vizinhança
-static double _tile_perimenter_temp(Tile *t, int not_step_mod_2) {
+static double _tile_perimenter_temp(Tile *t, const int not_step_mod_2) {
 //	double t1, t2;
 
 	#ifdef DEBUG
@@ -81,7 +81,7 @@ static double _tile_perimenter_temp(Tile *t, int not_step_mod_2) {
 		    ) / (2.*(t->dl + t->d));
 }
 
-void tile_calc_temp(Tile *t, int step_mod_2) {
+void tile_calc_temp(Tile *t, const int step_mod_2) {
 
 	#ifdef DEBUG
 	assert(t != NULL);
@@ -209,21 +209,22 @@ void ring_free(Ring *ring) {
 }
 
 
-void ring_calc_temp(Ring *ring, int step_mod_2) {
-	unsigned int i;
+void ring_calc_temp(Ring *ring, const int step_mod_2) {
+	unsigned int i, n_tiles;
 
 	#ifdef DEBUG
 	assert(ring != NULL);
 	#endif
-
-	//XXX: paralelizar aqui
-	for (i = 0; i < ring->n_tiles; i++) {
+	n_tiles = ring->n_tiles;
+	
+//	#pragma omp parallel for private (i)
+	for (i = 0; i < n_tiles; i++) {
 		tile_calc_temp(&ring->tiles[i], step_mod_2);
 	}
 }
 
 // 
-void ring_update_temp(Ring *ring, int step_mod_2) {
+void ring_update_temp(Ring *ring, const int step_mod_2) {
 	double s;
 	unsigned int i;	
 
@@ -258,7 +259,7 @@ double inline ring_neighborhood_temp_plus(Ring *ring) {
 }
 
 
-void ring_print(Ring *ring, FILE *file, int step_mod_2) {
+void ring_print(Ring *ring, FILE *file, const int step_mod_2) {
 	/* ===== arquivo de saída =====
 	[OK] Primeira linha: a, h e d.
 	[OK] Segunda linha: temperatura da calota.
@@ -414,7 +415,7 @@ void mesh_free(Mesh *m) {
 }
 
 
-void mesh_print(Mesh *m, FILE* file, int step_mod_2) {
+void mesh_print(Mesh *m, FILE* file, const int step_mod_2) {
 	/* ===== arquivo de saída =====
 	[OK] Primeira linha: a, h e d.
 	Segunda linha: temperatura da calota.
@@ -439,7 +440,7 @@ void mesh_print(Mesh *m, FILE* file, int step_mod_2) {
 	}
 }
 
-void mesh_step(Mesh *m, int step_mod_2) {
+void mesh_step(Mesh *m, const int step_mod_2) {
 	unsigned int i;
 
 	for (i = 0; i < m->n_rings; i++) {
@@ -453,7 +454,7 @@ void mesh_step(Mesh *m, int step_mod_2) {
 	cover_update_temp(&m->cover);
 }
 
-double mesh_temp_media_pastilhas(Mesh *m, int step_mod_2) {
+double mesh_temp_media_pastilhas(Mesh *m, const int step_mod_2) {
 	unsigned int i, j, qtd_pastilhas = 0;
 	double soma = 0;
 

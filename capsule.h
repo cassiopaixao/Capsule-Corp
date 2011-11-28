@@ -88,18 +88,18 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 // Define pastilhas vizinhas
 void tile_link(Tile *t, Tile *left, Tile *right);
 // Calcula temperatura do próximo timestep
-void tile_calc_temp(Tile *t, int step_mod_2);
+void tile_calc_temp(Tile *t, const int step_mod_2);
 
 //-------------*-----------
 // Anel
 // ------------*-----------
 
 void ring_init(Ring *ring, Capsule *cap, double l, double L);
-void ring_calc_temp(Ring *ring, int step_mod_2);
+void ring_calc_temp(Ring *ring, const int step_mod_2);
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2);
 double ring_neighborhood_temp_plus(Ring *ring);
-void ring_print(Ring *ring, FILE* file, int step_mod_2);
-void ring_update_temp(Ring *ring, int step_mod_2);
+void ring_print(Ring *ring, FILE* file, const int step_mod_2);
+void ring_update_temp(Ring *ring, const int step_mod_2);
 void ring_free(Ring *ring);
 
 // --------------*-------------
@@ -116,9 +116,9 @@ void cover_print(Cover *c, FILE* file);
 // --------------*-------------
 
 void mesh_init(Mesh *m, Capsule *cap);
-void mesh_step(Mesh *m, int step_mod_2);
-void mesh_print(Mesh *m, FILE* file, int steps_mod_2);
-double mesh_temp_media_pastilhas(Mesh *m, int steps_mod_2);
+void mesh_step(Mesh *m, const int step_mod_2);
+void mesh_print(Mesh *m, FILE* file, const int steps_mod_2);
+double mesh_temp_media_pastilhas(Mesh *m, const int steps_mod_2);
 double mesh_temp_media_rejunte(Mesh *m);
 void mesh_free(Mesh *m);
 
