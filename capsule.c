@@ -89,7 +89,7 @@ void tile_calc_temp(Tile *t, const int step_mod_2) {
 	t->t += 1;
 	if (t->bursted) { // estourou?
 		// só rejunte
-		t->temp[step_mod_2] = _tile_perimenter_temp(t, (step_mod_2+1)%2);
+		t->temp[step_mod_2] = _tile_perimenter_temp(t, 1-step_mod_2);
 	} else {
 		double vn,
 			delta_atrito = 0.,
@@ -102,13 +102,13 @@ void tile_calc_temp(Tile *t, const int step_mod_2) {
 			val = t->t - t->t_0;
 			delta_atrito = t->alpha * vn * atan(val*val);
 		}
-	
+
 		delta_dissip = t->delta * abs(vn);
-		t->temp[step_mod_2] = _tile_perimenter_temp(t, (step_mod_2+1)%2) + delta_atrito - delta_dissip;
+		t->temp[step_mod_2] = _tile_perimenter_temp(t, (1-step_mod_2)) + delta_atrito - delta_dissip;
 
 		if (t->temp[step_mod_2] > t->ring->capsule->theta_crit) {
 			t->bursted = 1; // estourou
-			t->temp[step_mod_2] = (t->left->temp[(step_mod_2+1)%2] + t->right->temp[(step_mod_2+1)%2])/2.;
+			t->temp[step_mod_2] = (t->left->temp[1-step_mod_2] + t->right->temp[1-step_mod_2])/2.;
 		}
 	}
 }
@@ -137,6 +137,8 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 	v3d a, b, c, d;
 	unsigned int next, prev;
 
+	Tile *til;
+
 	#ifdef DEBUG
 	assert(ring != NULL);
 	assert(cap != NULL);
@@ -149,6 +151,7 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 
 	ring->n_tiles = n_tiles;
 	ring->tiles = (Tile*) malloc(sizeof(Tile) * n_tiles);
+	til = ring->tiles;
 
 	z0 = l;
 	z1 = L + l;
@@ -185,14 +188,14 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 		v3d_set(&c, x1, y1, z1);
 		v3d_set(&d, X1, Y1, z1);
 
-		tile_init(&ring->tiles[i], cap, &a, &b, &c, &d, ring);
-	}
+		tile_init(&/*ring->*/til/*es*/[i], cap, &a, &b, &c, &d, ring);
+//	}
 
-	for (i = 0; i < n_tiles; i++) {
+//	for (i = 0; i < n_tiles; i++) {
 		next = (i + 1) % n_tiles;
 		prev = (i - 1 + n_tiles) % n_tiles;
 
-		tile_link(&ring->tiles[i], &ring->tiles[prev], &ring->tiles[next]);
+		tile_link(&/*ring->*/til/*es*/[i], &/*ring->*/til/*es*/[prev], &/*ring->*/til/*es*/[next]);
 	}
 
 	ring->temp = cap->theta_0;
@@ -209,19 +212,21 @@ void ring_free(Ring *ring) {
 void ring_calc_temp(Ring *ring, const int step_mod_2) {
 	unsigned int i, n_tiles;
 
+	Tile *til;
+
 	#ifdef DEBUG
 	assert(ring != NULL);
 	#endif
 	
 	n_tiles = ring->n_tiles;
-	
+	til = ring->tiles;
 	#pragma omp parallel for \
 		private (i) \
 		shared (n_tiles, ring) \
 		num_threads(NUM_THREADS) \
 		if (n_tiles > MIN_TILES_TO_PARALLEL)
 	for (i = 0; i < n_tiles; i++) {
-		tile_calc_temp(&ring->tiles[i], step_mod_2);
+		tile_calc_temp(&/*ring->*/til/*es*/[i], step_mod_2);
 	}
 }
 
@@ -230,11 +235,15 @@ void ring_update_temp(Ring *ring, const int step_mod_2) {
 	double s;
 	unsigned int i, n_tiles;
 
+	Tile *til;
+
 	n_tiles = ring->n_tiles;
+
+	til = ring->tiles;
 
 	s = 0.;
 	for (i = 0; i < n_tiles; i++) {
-		s += ring->tiles[i].temp[step_mod_2];
+		s += /*ring->*/til/*es*/[i].temp[step_mod_2];
 	}
 
 	ring->temp = s / ((double) n_tiles);
@@ -279,15 +288,19 @@ void ring_print(Ring *ring, FILE *file, const int step_mod_2) {
 
 	unsigned int i, n_tiles;
 
+	Tile *til;
+
 	assert(ring != NULL);
 
 	n_tiles = ring->n_tiles;
+
+	til = ring->tiles;
 
 	fprintf(file, "%d", ring->n_tiles);
 
 	for (i = 0; i < n_tiles; i++) {
 		fprintf(file, " %.2lf",
-			((ring->tiles[i].bursted ? -1 : 1) * ring->tiles[i].temp[step_mod_2]));
+			((/*ring->*/til/*es*/[i].bursted ? -1 : 1) * /*ring->*/til/*es*/[i].temp[step_mod_2]));
 	}
 
 	fprintf(file, "\n");
@@ -600,9 +613,10 @@ void capsule_free(Capsule *capsule) {
 }
 
 void capsule_iterate(Capsule *capsule) {
-	unsigned long int i;
+	unsigned long int i, steps;
+	steps = capsule->steps;
 
-	for (i = 0; i < capsule->steps; i++) {
+	for (i = 0; i < steps; i++) {
 		mesh_step(&capsule->mesh, i%2);
 	}
 }
