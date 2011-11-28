@@ -64,18 +64,13 @@ void tile_link(Tile *t, Tile *left, Tile *right) {
 
 // média das temperaturas na vizinhança
 static double _tile_perimenter_temp(Tile *t, const int not_step_mod_2) {
-//	double t1, t2;
 
 	#ifdef DEBUG
 	assert(t != NULL);
 	assert(t->left != NULL);
 	assert(t->right != NULL);
 	#endif
-/*
-	return ((t->left->temp[not_step_mod_2] + t->right->temp[not_step_mod_2]) * t->dl +
-		    (t1 + t2) * t->d
-		    ) / (2.*(t->dl + t->d));
-*/
+
 	return ((t->left->temp[not_step_mod_2] + t->right->temp[not_step_mod_2]) * t->dl +
 		    (ring_neighborhood_temp_plus(t->ring)) * t->d
 		    ) / (2.*(t->dl + t->d));
@@ -118,7 +113,7 @@ void tile_calc_temp(Tile *t, const int step_mod_2) {
 
 // BEGIN [RING]
 
-unsigned int _ring_n_tiles(Ring *ring, double l) {
+inline unsigned int _ring_n_tiles(Ring *ring, double l) {
 	#ifdef DEBUG
 	assert(ring != NULL);
 	assert(ring->capsule != NULL);
@@ -215,6 +210,7 @@ void ring_calc_temp(Ring *ring, const int step_mod_2) {
 	#ifdef DEBUG
 	assert(ring != NULL);
 	#endif
+	
 	n_tiles = ring->n_tiles;
 	
 //	#pragma omp parallel for private (i)
@@ -226,14 +222,16 @@ void ring_calc_temp(Ring *ring, const int step_mod_2) {
 // 
 void ring_update_temp(Ring *ring, const int step_mod_2) {
 	double s;
-	unsigned int i;	
+	unsigned int i, n_tiles;
+
+	n_tiles = ring->n_tiles;
 
 	s = 0.;
-	for (i = 0; i < ring->n_tiles; i++) {
+	for (i = 0; i < n_tiles; i++) {
 		s += ring->tiles[i].temp[step_mod_2];
 	}
 
-	ring->temp = s / ((double) ring->n_tiles);
+	ring->temp = s / ((double) n_tiles);
 }
 
 void ring_neighborhood_temp(Ring *ring, double *t1, double *t2) {
@@ -273,13 +271,15 @@ void ring_print(Ring *ring, FILE *file, const int step_mod_2) {
 	do rejunte na posição (com o valor trocado). Valores em Celsius.
 	*/
 
-	unsigned int i;
+	unsigned int i, n_tiles;
 
 	assert(ring != NULL);
 
+	n_tiles = ring->n_tiles;
+
 	fprintf(file, "%d", ring->n_tiles);
 
-	for (i = 0; i < ring->n_tiles; i++) {
+	for (i = 0; i < n_tiles; i++) {
 		fprintf(file, " %.2lf",
 			((ring->tiles[i].bursted ? -1 : 1) * ring->tiles[i].temp[step_mod_2]));
 	}
@@ -441,29 +441,33 @@ void mesh_print(Mesh *m, FILE* file, const int step_mod_2) {
 }
 
 void mesh_step(Mesh *m, const int step_mod_2) {
-	unsigned int i;
+	unsigned int i, n_rings;
 
-	for (i = 0; i < m->n_rings; i++) {
+	n_rings = m->n_rings;	
+	
+	for (i = 0; i < n_rings; i++) {
 		ring_calc_temp(&m->rings[i], step_mod_2);
 	}
 	cover_calc_temp(&m->cover);
 
-	for (i = 0; i < m->n_rings; i++) {
+	for (i = 0; i < n_rings; i++) {
 		ring_update_temp(&m->rings[i], step_mod_2);
 	}
 	cover_update_temp(&m->cover);
 }
 
 double mesh_temp_media_pastilhas(Mesh *m, const int step_mod_2) {
-	unsigned int i, j, qtd_pastilhas = 0;
+	unsigned int i, j, qtd_pastilhas = 0, n_rings;
 	double soma = 0;
+
+	n_rings = m->n_rings;
 
 	if (!m->cover.bursted) {
 		qtd_pastilhas++;
 		soma += m->cover.last_temp;
 	}
 
-	for (i=0; i < m->n_rings; i++) {
+	for (i=0; i < n_rings; i++) {
 		for (j=0; j < m->rings[i].n_tiles; j++) {
 			if (!m->rings[i].tiles[j].bursted) {
 				soma += m->rings[i].tiles[j].temp[step_mod_2];
@@ -479,12 +483,15 @@ double mesh_temp_media_pastilhas(Mesh *m, const int step_mod_2) {
 }
 
 double mesh_temp_media_rejunte(Mesh *m) {
-	unsigned int i;
+	unsigned int i, n_rings;
 	double soma = 0;
-	for (i=0; i < m->n_rings; i++) {
+
+	n_rings = m->n_rings;
+
+	for (i=0; i < n_rings; i++) {
 		soma += m->rings[i].temp;
 	}
-	return soma / m->n_rings;
+	return soma / n_rings;
 }
 
 // END [MESH]
