@@ -213,7 +213,11 @@ void ring_calc_temp(Ring *ring, const int step_mod_2) {
 	
 	n_tiles = ring->n_tiles;
 	
-//	#pragma omp parallel for private (i)
+	#pragma omp parallel for \
+		private (i) \
+		shared (n_tiles, ring) \
+		num_threads(NUM_THREADS) \
+		if (n_tiles > MIN_TILES_TO_PARALLEL)
 	for (i = 0; i < n_tiles; i++) {
 		tile_calc_temp(&ring->tiles[i], step_mod_2);
 	}
@@ -445,11 +449,19 @@ void mesh_step(Mesh *m, const int step_mod_2) {
 
 	n_rings = m->n_rings;	
 	
+	#pragma omp parallel for \
+		private (i) \
+		shared (n_rings, m) \
+		num_threads(NUM_THREADS)
 	for (i = 0; i < n_rings; i++) {
 		ring_calc_temp(&m->rings[i], step_mod_2);
 	}
 	cover_calc_temp(&m->cover);
 
+	#pragma omp parallel for \
+		private (i) \
+		shared (n_rings, m) \
+		num_threads(NUM_THREADS)
 	for (i = 0; i < n_rings; i++) {
 		ring_update_temp(&m->rings[i], step_mod_2);
 	}
