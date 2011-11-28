@@ -45,9 +45,11 @@ void v3d_copy(v3d *res, v3d *a) {
 
 void v3d_cross(v3d *a, v3d *b, v3d *res) {
 
+	#ifdef DEBUG
 	assert(a != NULL);
 	assert(b != NULL);
 	assert(res != NULL);
+	#endif
 
 	res->x = a->y * b->z - a->z * b->y;
 	res->y = a->z * b->x - a->x * b->z;
