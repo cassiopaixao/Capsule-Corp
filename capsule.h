@@ -23,7 +23,9 @@ typedef struct STile {
 
 	struct SRing *ring;     // anel em que a pastilha está
 
-	v3d    edges[4];
+	/*
+	v3d    edges[4];	// vértices da pastilha
+	*/
 
 	struct STile *left, *right;     // pastilhas ao lado
 } Tile;

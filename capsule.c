@@ -34,10 +34,12 @@ void tile_init(Tile *t, Capsule *cap, v3d *a, v3d *b, v3d *c, v3d *d, Ring *ring
 	t->d = cap->d;
 	t->bursted = 0;
 
+	/*
 	v3d_copy(&t->edges[0], a);
 	v3d_copy(&t->edges[1], b);
 	v3d_copy(&t->edges[2], c);
 	v3d_copy(&t->edges[3], d);
+	*/
 
 	t->ring = ring;
 
