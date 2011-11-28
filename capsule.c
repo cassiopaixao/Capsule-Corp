@@ -188,14 +188,12 @@ void ring_init(Ring *ring, Capsule *cap, double l, double L) {
 		v3d_set(&c, x1, y1, z1);
 		v3d_set(&d, X1, Y1, z1);
 
-		tile_init(&/*ring->*/til/*es*/[i], cap, &a, &b, &c, &d, ring);
-//	}
+		tile_init(&til[i], cap, &a, &b, &c, &d, ring);
 
-//	for (i = 0; i < n_tiles; i++) {
 		next = (i + 1) % n_tiles;
 		prev = (i - 1 + n_tiles) % n_tiles;
 
-		tile_link(&/*ring->*/til/*es*/[i], &/*ring->*/til/*es*/[prev], &/*ring->*/til/*es*/[next]);
+		tile_link(&til[i], &til[prev], &til[next]);
 	}
 
 	ring->temp = cap->theta_0;
@@ -226,11 +224,10 @@ void ring_calc_temp(Ring *ring, const int step_mod_2) {
 		num_threads(NUM_THREADS) \
 		if (n_tiles > MIN_TILES_TO_PARALLEL)
 	for (i = 0; i < n_tiles; i++) {
-		tile_calc_temp(&/*ring->*/til/*es*/[i], step_mod_2);
+		tile_calc_temp(&til[i], step_mod_2);
 	}
 }
 
-// 
 void ring_update_temp(Ring *ring, const int step_mod_2) {
 	double s;
 	unsigned int i, n_tiles;
@@ -243,7 +240,7 @@ void ring_update_temp(Ring *ring, const int step_mod_2) {
 
 	s = 0.;
 	for (i = 0; i < n_tiles; i++) {
-		s += /*ring->*/til/*es*/[i].temp[step_mod_2];
+		s += til[i].temp[step_mod_2];
 	}
 
 	ring->temp = s / ((double) n_tiles);
@@ -300,7 +297,7 @@ void ring_print(Ring *ring, FILE *file, const int step_mod_2) {
 
 	for (i = 0; i < n_tiles; i++) {
 		fprintf(file, " %.2lf",
-			((/*ring->*/til/*es*/[i].bursted ? -1 : 1) * /*ring->*/til/*es*/[i].temp[step_mod_2]));
+			((til[i].bursted ? -1 : 1) * til[i].temp[step_mod_2]));
 	}
 
 	fprintf(file, "\n");
@@ -337,9 +334,9 @@ void cover_calc_temp(Cover *c) {
 	if (c->bursted) { // estourou?
 		c->new_temp = c->ring.next_ring->temp;
 	} else {
-		double vn;
-		double delta_atrito, delta_dissip;
-		double val;
+		double vn,
+			delta_atrito, delta_dissip,
+			val;
 
 		vn = v3d_dot(&c->normal, &c->ring.capsule->vel);
 
@@ -382,7 +379,7 @@ void cover_print(Cover *c, FILE *file) {
 void mesh_init(Mesh *m, Capsule *cap) {
 	double L, l, tmp;
 	Ring *prev_ring;
-	unsigned int i;
+	unsigned int i, n_rings;
 
 	assert(m != NULL);
 	assert(cap != NULL);
@@ -400,14 +397,13 @@ void mesh_init(Mesh *m, Capsule *cap) {
 		l += L;
 	}
 
-	m->rings = (Ring*) malloc(sizeof(Ring) * m->n_rings);
+	n_rings = m->n_rings;
 
-	i = 0;
-	l = L;
+	m->rings = (Ring*) malloc(sizeof(Ring) * m->n_rings);
 
 	prev_ring = (Ring*) (&m->cover);
 
-	while ((l + L) < cap->h) {
+	for (i=0, l=L; i<n_rings; i++) {
 		ring_init(&m->rings[i], cap, l, L);
 		m->rings[i].prev_ring = prev_ring;
 		if (i < (m->n_rings-1)) {
@@ -415,7 +411,6 @@ void mesh_init(Mesh *m, Capsule *cap) {
 		}
 		prev_ring = &m->rings[i];
 		l += L;
-		i++;
 	}
 
 	m->rings[m->n_rings-1].next_ring = &m->rings[m->n_rings-1];
@@ -461,15 +456,15 @@ void mesh_print(Mesh *m, FILE* file, const int step_mod_2) {
 
 void mesh_step(Mesh *m, const int step_mod_2) {
 	unsigned int i, n_rings;
-
-	n_rings = m->n_rings;	
+	Ring *rings = m->rings;
+	n_rings = m->n_rings;
 	
 	#pragma omp parallel for \
 		private (i) \
 		shared (n_rings, m) \
 		num_threads(NUM_THREADS)
 	for (i = 0; i < n_rings; i++) {
-		ring_calc_temp(&m->rings[i], step_mod_2);
+		ring_calc_temp(&rings[i], step_mod_2);
 	}
 	cover_calc_temp(&m->cover);
 
@@ -478,15 +473,15 @@ void mesh_step(Mesh *m, const int step_mod_2) {
 		shared (n_rings, m) \
 		num_threads(NUM_THREADS)
 	for (i = 0; i < n_rings; i++) {
-		ring_update_temp(&m->rings[i], step_mod_2);
+		ring_update_temp(&rings[i], step_mod_2);
 	}
 	cover_update_temp(&m->cover);
 }
 
 double mesh_temp_media_pastilhas(Mesh *m, const int step_mod_2) {
-	unsigned int i, j, qtd_pastilhas = 0, n_rings;
+	unsigned int i, j, qtd_pastilhas = 0, n_rings, n_tiles;
 	double soma = 0;
-
+	Tile *til;
 	n_rings = m->n_rings;
 
 	if (!m->cover.bursted) {
@@ -495,9 +490,11 @@ double mesh_temp_media_pastilhas(Mesh *m, const int step_mod_2) {
 	}
 
 	for (i=0; i < n_rings; i++) {
-		for (j=0; j < m->rings[i].n_tiles; j++) {
-			if (!m->rings[i].tiles[j].bursted) {
-				soma += m->rings[i].tiles[j].temp[step_mod_2];
+		til = m->rings[i].tiles;
+		n_tiles = m->rings[i].n_tiles;
+		for (j=0; j < n_tiles; j++) {
+			if (!til[j].bursted) {
+				soma += til[j].temp[step_mod_2];
 				qtd_pastilhas++;
 			}
 		}

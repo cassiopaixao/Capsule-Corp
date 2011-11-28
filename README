@@ -83,6 +83,45 @@ OBS: Temperatura positiva indica a temperatura da pastilha existente na posição,
 enquanto uma negativa indica a temperatura do rejunte na posição.
 Os valores das temperaturas são dados em Celsius.
 
+--------
+Paralelização
+--------
+1. A função ring_calc_temp é responsável por calcular as temperaturas das pas-
+tilhas de um anel. A chamada a essa função para cada anel é paralelizada.
+
+2. Após cálculos das temperaturas em determinado passo, chamadas à função
+ring_update_temp (responsável por calcular a média das temperaturas das pasti-
+lhas em um anel) são realizadas paralelamente.
+
+3. Caso o anel tenha mais que um número pré-definido de pastilhas (definido
+inicialmente no Makefile como 100), o calculo das temperaturas dessas pastilhas
+será paralelizado.
+
+Vale ressaltar que paralelizações em vários pontos do código foram testadas, mas
+não apresentaram resultados satisfatórios, e, portanto, retiradas do código
+final.
+
+--------
+Otimizações
+--------
+1. A fim de não alterar posição de todas as pastilhas em relação ao vetor
+posição, rotacionamos os vetores posição e velocidade de modo "síncrono",
+fazendo com que o vetor posição aponte para baixo (<0, 0, z>, z<0) e mantendo a
+posição relativa entre esses vetores, não alterando, assim, resultado dos
+cálculos.
+
+2. A cada passo, calculamos a nova temperatura de cada pastilha, considerando
+como temperatura dos vizinhos a temperatura anterior das mesmas. Para evitar
+atribuição do tipo "last_temp = new_temp", utilizamos um vetor de duas posições
+para guardar as temperaturas. Em passos ímpares, temp[1] representa a tempera-
+tura atual, e temp[0] a temperatura no passo anterior. O oposto ocorre em passos
+pares.
+Tal otimização não foi realizada com a temperatura da calota, que manteve os
+atributos new_temp e last_temp.
+
+3. Evitamos referências ao número de pastilhas ou de anéis dentro dos objetos,
+copiando-os para variáveis locais.
+
 
                ==================================================
                           Data: 28 de Novembro de 2011
