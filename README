@@ -54,11 +54,24 @@ Para isto basta entrar no diretório em que está os arquivos do programa e
 digitar o comando 'make', utilizando o terminal.
 
 Ao compilar o código fonte, será criado um arquivo executável de nome 'ep'.
-É importante verificar se o arquivo de entrada 'entrada.txt' está presente no
-diretório. Para modificar os valores que deseja passar como entrada, basta
-editar este arquivo.
 
-Para executar, execute no terminal "./ep".
+Para executar, execute no terminal "./ep arquivoDeEntrada", onde
+	arquivoDeEntrada -> caminho para arquivo que contém os dados de entrada.
+
+--------
+Alterando a quantidade de processadores a usar
+--------
+Durante a compilação, é reconhecido a quantidade de núcleos disponíveis para
+o programa. Dessa forma, o programa utiliza o máximo de recursos disponíveis
+para a sua execução.
+
+Para alterar a quantidade de processadores a serem usados, abra o arquivo
+Makefile e altere a linha
+	NUM_THREADS = -DNUM_THREADS=$(NUM_CORES)
+substituindo "$(NUM_CORES)" por um número, o número de processadores que preten-
+de usar.
+
+Recompile o programa (make clean & make) e execute-o.
 
 --------
 Saídas
