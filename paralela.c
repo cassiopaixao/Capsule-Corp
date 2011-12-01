@@ -6,6 +6,7 @@
 
 static Capsule capsule;
 
+
 double prox_linha(FILE *arq){
 
 	double val;
@@ -45,8 +46,18 @@ static inline void parse_input(const char* filename) {
 
 int main(int argc, char **argv) {
 
+	if (argc < 2) {
+		printf(
+			"Execute do seguinte modo:\n"\
+			"%s arquivoDeEntrada\n"\
+			"onde:\n"\
+			"\tarquivoDeEntrada: nome do arquivo de entrada\n",
+				argv[0]);
+		return EXIT_SUCCESS;
+	}
+
 	// configura parametros
-	parse_input("entrada.txt");
+	parse_input(argv[1]);
 
 	#ifdef DEBUG
 	// imprime parametros
